@@ -4,17 +4,14 @@ const https = require("https");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ─── CORS Middleware ───────────────────────────────────────────────
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   next();
 });
 
-// ─── THE MAIN ENDPOINT ────────────────────────────────────────────
 app.get("/api/classify", async (req, res) => {
   const { name } = req.query;
 
-  // ── Input Validation ──────────────────────────────────────────
   if (name === undefined || name === "") {
     return res.status(400).json({
       status: "error",
@@ -29,7 +26,6 @@ app.get("/api/classify", async (req, res) => {
     });
   }
 
-  // ── Call Genderize API ─────────────────────────────────────────
   try {
     const apiData = await new Promise((resolve, reject) => {
       https.get(
@@ -48,7 +44,6 @@ app.get("/api/classify", async (req, res) => {
       ).on("error", reject);
     });
 
-    // ── Edge Case: Genderize has no prediction ─────────────────
     if (apiData.gender === null || apiData.count === 0) {
       return res.status(200).json({
         status: "error",
@@ -56,15 +51,12 @@ app.get("/api/classify", async (req, res) => {
       });
     }
 
-    // ── Process the Data ───────────────────────────────────────
-    const gender      = apiData.gender;
+    const gender = apiData.gender;
     const probability = apiData.probability;
     const sample_size = apiData.count;
-
     const is_confident = probability >= 0.7 && sample_size >= 100;
     const processed_at = new Date().toISOString();
 
-    // ── Send Success Response ──────────────────────────────────
     return res.status(200).json({
       status: "success",
       data: {
@@ -86,7 +78,6 @@ app.get("/api/classify", async (req, res) => {
   }
 });
 
-// ─── START SERVER ─────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
