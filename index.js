@@ -36,6 +36,7 @@ app.get("/api/classify", async (req, res) => {
           apiRes.on("end", () => {
             try {
               resolve(JSON.parse(raw));
+              console.log("Genderize raw response:", raw); 
             } catch {
               reject(new Error("Invalid JSON from Genderize"));
             }
