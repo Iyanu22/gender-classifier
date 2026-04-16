@@ -36,7 +36,6 @@ app.get("/api/classify", async (req, res) => {
           apiRes.on("end", () => {
             try {
               resolve(JSON.parse(raw));
-              console.log("Genderize raw response:", raw); 
             } catch {
               reject(new Error("Invalid JSON from Genderize"));
             }
@@ -45,36 +44,13 @@ app.get("/api/classify", async (req, res) => {
       ).on("error", reject);
     });
 
-    if (apiData.gender === null || apiData.count === 0) {
-      return res.status(200).json({
-        status: "error",
-        message: "No prediction available for the provided name",
-      });
-    }
-
-    const gender = apiData.gender;
-    const probability = apiData.probability;
-    const sample_size = apiData.count;
-    const is_confident = probability >= 0.7 && sample_size >= 100;
-    const processed_at = new Date().toISOString();
-
-    return res.status(200).json({
-      status: "success",
-      data: {
-        name,
-        gender,
-        probability,
-        sample_size,
-        is_confident,
-        processed_at,
-      },
-    });
+    // TEMPORARY: return raw apiData so we can see exactly what Genderize sends
+    return res.status(200).json({ debug: apiData });
 
   } catch (err) {
-    console.error(err);
     return res.status(500).json({
       status: "error",
-      message: "Internal server error",
+      message: err.message,
     });
   }
 });
